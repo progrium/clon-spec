@@ -6,7 +6,7 @@ CLON is an argument syntax spec for defining JSON objects in a way that makes se
 ## Simple Example
 In these examples, `clon` is an imaginary tool that takes CLON arguments and outputs the resulting JSON.
 
-```
+```shell
 $ clon name=John email=john@example.org
 {
     "name": "John",
@@ -17,8 +17,8 @@ $ clon name=John email=john@example.org
 ## Non-string JSON fields
 Non-string JSON fields use the `:=` separator, which allows you to embed arbitrary JSON data into the resulting JSON object. Additionally, text and raw JSON files can also be embedded into fields using `=@` and `:=@`:
 
-```
-clon \
+```shell
+$ clon \
     name=John \                        # String (default)
     age:=29 \                          # Raw JSON — Number
     married:=false \                   # Raw JSON — Boolean
@@ -47,7 +47,7 @@ clon \
 ## Nested JSON
 You still use the existing data field operators (`=`/`:=`) but instead of specifying a top-level field name (like `key=value`), you specify a path declaration telling where and how to put the given value inside an object:
 
-```
+```shell
 $ clon \
     platform[name]=HTTPie \
     platform[about][mission]='Make APIs simple and intuitive' \
@@ -80,7 +80,7 @@ $ clon \
 
 Let’s start with a simple example, and build a simple search query:
 
-```
+```shell
 $ clon \
     category=tools \
     search[type]=id \
@@ -100,7 +100,7 @@ Also note that, just as the regular syntax, you can use the `:=` operator to dir
 
 Building arrays is also possible, through `[]` suffix (an append operation). This creates an array in the given path (if there is not one already), and append the given value to that array.
 
-```
+```shell
 $ clon \
     category=tools \
     search[type]=keyword \
@@ -120,7 +120,7 @@ $ clon \
 
 If you want to explicitly specify the position of elements inside an array, you can simply pass the desired index as the path:
 
-```
+```shell
 $ clon \
     category=tools \
     search[type]=keyword \
@@ -137,9 +137,10 @@ $ clon \
     }
 }
 ```
+
 If there are any missing indexes, they will be nullified in order to create a concrete object:
 
-```
+```shell
 $ clon \
     category=tools \
     search[type]=platforms \
@@ -161,7 +162,8 @@ $ clon \
 ```
 
 It is also possible to embed raw JSON to a nested structure, for example:
-```
+
+```shell
 $ clon \
   category=tools \
   search[type]=platforms \
@@ -181,8 +183,10 @@ $ clon \
     }
 }
 ```
+
 And just to demonstrate all of these features together, let’s create a very deeply nested JSON object:
-```
+
+```shell
 $ clon \
     shallow=value \                                # Shallow key-value pair
     object[key]=value \                            # Nested key-value pair
@@ -198,7 +202,7 @@ $ clon \
 
 To build an array instead of a regular object, you can simply do that by omitting the starting key:
 
-```
+```shell
 $ clon \
     []:=1 \
     []:=2 \
@@ -212,7 +216,7 @@ $ clon \
 
 You can also apply the nesting to the items by referencing their index:
 
-```
+```shell
 $ clon \
     [0][type]=platform [0][name]=terminal \
     [1][type]=platform [1][name]=desktop
@@ -233,7 +237,7 @@ Nested JSON syntax uses the same escaping rules as the terminal. There are 3 spe
 
 To include a bracket as is, escape it with a backslash (`\`):
 
-```
+```shell
 $ clon \
   'foo\[bar\]:=1' \
   'baz[\[]:=2' \
@@ -249,7 +253,7 @@ $ clon \
 
 If use the literal backslash character (`\`), escape it with another backslash:
 
-```
+```shell
 $ clon \
   'backslash[\\]:=1'
 {
@@ -261,7 +265,7 @@ $ clon \
 
 A regular integer in a path (e.g `[10]`) means an array index; but if you want it to be treated as a string, you can escape the whole number by using a backslash (`\`) prefix.
 
-```
+```shell
 $ clon \
   'object[\1]=stringified' \
   'object[\100]=same' \
@@ -282,7 +286,7 @@ $ clon \
 
 If you make a typo or forget to close a bracket, the errors SHOULD guide you to fix it. For example:
 
-```
+```shell
 $ clon \
   'foo[bar]=OK' \
   'foo[baz][quux=FAIL'
@@ -290,13 +294,14 @@ Syntax Error: Expecting ']'
 foo[baz][quux
              ^
 ```
+
 You can follow to given instruction (adding a `]`) and repair your expression.
 
 #### Type safety
 
 Each container path (e.g., `x[y][z]` in `x[y][z][1]`) has a certain type, which gets defined with the first usage and can’t be changed after that. If you try to do a key-based access to an array or an index-based access to an object, you should get an error out:
 
-```
+```shell
 $ clon \
   'array[]:=1' \
   'array[]:=2' \
@@ -308,7 +313,7 @@ array[key]
 
 Type Safety does not apply to value overrides, for example:
 
-```
+```shell
 $ clon \
   user[name]:=411     # Defined as an integer
   user[name]=string   # Overridden with a string
@@ -323,11 +328,11 @@ $ clon \
 
 For very complex JSON structures, it may be more convenient to pass it as raw input, for example:
 
-```
+```shell
 $ echo -n '{"hello": "world"}' | clon
 ```
 
-```
+```shell
 $ clon < files/data.json
 ```
 
