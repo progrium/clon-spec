@@ -8,6 +8,8 @@ In these examples, `clon` is an imaginary tool that takes CLON arguments and out
 
 ```shell
 $ clon name=John email=john@example.org
+```
+```json
 {
     "name": "John",
     "email": "john@example.org"
@@ -26,6 +28,8 @@ $ clon \
     favorite:='{"tool": "HTTPie"}' \   # Raw JSON — Object
     bookmarks:=@files/data.json \      # Embed JSON file
     description=@files/text.txt        # Embed text file
+```
+```json
 {
     "age": 29,
     "hobbies": [
@@ -58,6 +62,8 @@ $ clon \
     platform[apps][]=Desktop \
     platform[apps][]=Web \
     platform[apps][]=Mobile
+```
+```json
 {
     "platform": {
         "name": "HTTPie",
@@ -85,6 +91,8 @@ $ clon \
     category=tools \
     search[type]=id \
     search[id]:=1
+```
+```json
 {
     "category": "tools",
     "search": {
@@ -106,6 +114,8 @@ $ clon \
     search[type]=keyword \
     search[keywords][]=APIs \
     search[keywords][]=CLI
+```
+```json
 {
     "category": "tools",
     "search": {
@@ -126,6 +136,8 @@ $ clon \
     search[type]=keyword \
     search[keywords][1]=APIs \
     search[keywords][0]=CLI
+```
+```json
 {
     "category": "tools",
     "search": {
@@ -147,6 +159,8 @@ $ clon \
     search[platforms][]=Terminal \
     search[platforms][1]=Desktop \
     search[platforms][3]=Mobile
+```
+```json
 {
     "category": "tools",
     "search": {
@@ -170,6 +184,8 @@ $ clon \
   'search[platforms]:=["Terminal", "Desktop"]' \
   search[platforms][]=Web \
   search[platforms][]=Mobile
+```
+```json
 {
     "category": "tools",
     "search": {
@@ -207,6 +223,8 @@ $ clon \
     []:=1 \
     []:=2 \
     []:=3
+```
+```json
 [
     1,
     2,
@@ -220,6 +238,8 @@ You can also apply the nesting to the items by referencing their index:
 $ clon \
     [0][type]=platform [0][name]=terminal \
     [1][type]=platform [1][name]=desktop
+```
+```json
 [
     {
         "type": "platform",
@@ -242,6 +262,8 @@ $ clon \
   'foo\[bar\]:=1' \
   'baz[\[]:=2' \
   'baz[\]]:=3'
+```
+```json
 {
     "baz": {
         "[": 2,
@@ -256,6 +278,8 @@ If use the literal backslash character (`\`), escape it with another backslash:
 ```shell
 $ clon \
   'backslash[\\]:=1'
+```
+```json
 {
     "backslash": {
         "\\": 1
@@ -270,6 +294,8 @@ $ clon \
   'object[\1]=stringified' \
   'object[\100]=same' \
   'array[1]=indexified'
+```
+```json
 {
     "array": [
         null,
@@ -286,7 +312,7 @@ $ clon \
 
 If you make a typo or forget to close a bracket, the errors SHOULD guide you to fix it. For example:
 
-```shell
+```
 $ clon \
   'foo[bar]=OK' \
   'foo[baz][quux=FAIL'
@@ -301,7 +327,7 @@ You can follow to given instruction (adding a `]`) and repair your expression.
 
 Each container path (e.g., `x[y][z]` in `x[y][z][1]`) has a certain type, which gets defined with the first usage and can’t be changed after that. If you try to do a key-based access to an array or an index-based access to an object, you should get an error out:
 
-```shell
+```
 $ clon \
   'array[]:=1' \
   'array[]:=2' \
@@ -317,6 +343,8 @@ Type Safety does not apply to value overrides, for example:
 $ clon \
   user[name]:=411     # Defined as an integer
   user[name]=string   # Overridden with a string
+```
+```json
 {
     "user": {
         "name": "string"
