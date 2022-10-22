@@ -52,4 +52,19 @@ T_arrayNestedMulti() {
   [[ "${result}" == "${expected}" ]] # || $T_fail "not matching"
 }
 
+T_arrayMixingRawAndNestedMulti() {
+    result="$($PROG \
+    category=tools \
+    search[type]=platforms \
+    search[platforms]:='["Terminal", "Desktop"]' \
+    search[platforms][]=Web \
+    search[platforms][]=Mobile \
+    2>/dev/null \
+  )"
+
+  local expected='{"category":"tools","search":{"type":"platforms","platforms":["Terminal","Desktop","Web","Mobile"]}}'
+  [[ "${result}" == "${expected}" ]] # || $T_fail "not matching"
+}
+
+
 

@@ -2,9 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
+	"io"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 
@@ -84,7 +85,8 @@ func toString(op jsonpatch.Operation) string {
 }
 func parseArgs() jsonpatch.Patch {
 	patch := jsonpatch.Patch{}
-	for i, next := range os.Args[1:] {
+
+	for i, next := range flag.Args() {
 		log.Printf("arg[%d]: %q\n", i, next)
 		parts := strings.Split(next, "=")
 		path, val := parts[0], parts[1]
@@ -107,8 +109,17 @@ func parseArgs() jsonpatch.Patch {
 	return patch
 }
 
+var verbose bool
+
 func main() {
-	log.SetFlags(log.Lmsgprefix)
+	flag.BoolVar(&verbose, "v", false, "verbose")
+	flag.Parse()
+	if !verbose {
+		log.SetOutput(io.Discard)
+	} else {
+		log.SetFlags(log.Lmsgprefix)
+		log.SetPrefix("[DEBUG] ")
+	}
 	patch := parseArgs()
 
 	modified, err := patch.Apply([]byte(`{}`))
