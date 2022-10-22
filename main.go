@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	jsonpatch "github.com/evanphx/json-patch/v5"
@@ -37,11 +38,18 @@ func getHierarchy(op jsonpatch.Operation) []jsonpatch.Operation {
 	p, _ := op.Path()
 	parts := strings.Split(p, "/")
 	full := ""
-	for _, next := range parts[1 : len(parts)-1] {
+	lastIdx := len(parts) - 1
+	last := parts[lastIdx]
+	for i, next := range parts[1:lastIdx] {
 		full = full + "/" + next
 		if _, ok := seen[full]; !ok {
+			// new hierarchy level
 			seen[full] = 0
-			ret = append(ret, addRaw(full, []byte("{}")))
+			if _, err := strconv.Atoi(last); err == nil && i == lastIdx-2 {
+				ret = append(ret, addRaw(full, []byte("[]")))
+			} else {
+				ret = append(ret, addRaw(full, []byte("{}")))
+			}
 		}
 	}
 	return ret
@@ -55,14 +63,25 @@ func translatePath(orig string) (string, bool) {
 	trans := ""
 	for _, part := range strings.Split(orig, "[") {
 		part = strings.TrimRight(part, "]")
-		log.Println("===next part:", part)
+		//log.Println("  next part:", part)
+		if part == "" {
+			// array
+			if _, ok := seen[trans]; !ok {
+				part = "0"
+			} else {
+				seen[trans] += 1
+				part = strconv.Itoa(seen[trans])
+			}
+		}
 		trans = trans + "/" + part
-		log.Println("===trans:", trans)
 	}
-
 	return trans, isRaw
 }
-
+func toString(op jsonpatch.Operation) string {
+	path, _ := op.Path()
+	val, _ := op.ValueInterface()
+	return fmt.Sprintf("op:%s path:%s val:%s", op.Kind(), path, val)
+}
 func parseArgs() jsonpatch.Patch {
 	patch := jsonpatch.Patch{}
 	for i, next := range os.Args[1:] {
@@ -73,13 +92,14 @@ func parseArgs() jsonpatch.Patch {
 		var nextOp jsonpatch.Operation
 		trPath, raw := translatePath(path)
 		seen[trPath] = 1
-		log.Println("trPat:", trPath)
+		log.Println("jsonpath:", trPath)
 		if raw {
 			nextOp = addRaw(trPath, []byte(val))
 		} else {
 			nextOp = addString(trPath, val)
 		}
 		for _, op := range getHierarchy(nextOp) {
+			// missing from hierarchy
 			patch = append(patch, op)
 		}
 		patch = append(patch, nextOp)
