@@ -29,6 +29,34 @@ func addRaw(path string, val []byte) jsonpatch.Operation {
 		"value": &v,
 	}
 }
+
+var seen map[string]int = map[string]int{}
+
+func getHierarchy(op jsonpatch.Operation) []jsonpatch.Operation {
+	ret := []jsonpatch.Operation{}
+	p, _ := op.Path()
+	parts := strings.Split(p, "/")
+	full := ""
+	for _, next := range parts[1 : len(parts)-1] {
+		full = full + "/" + next
+		if _, ok := seen[full]; !ok {
+			seen[full] = 0
+			ret = append(ret, addRaw(full, []byte("{}")))
+		}
+	}
+	return ret
+}
+
+func translatePath(orig string) (string, bool) {
+	isRaw := orig[len(orig)-1:] == ":"
+	trans := orig
+	if isRaw {
+		trans = strings.TrimRight(orig, ":")
+	}
+	trans = strings.ReplaceAll(trans, ".", "/")
+	return "/" + trans, isRaw
+}
+
 func parseArgs() jsonpatch.Patch {
 	patch := jsonpatch.Patch{}
 	for i, next := range os.Args[1:] {
@@ -37,11 +65,16 @@ func parseArgs() jsonpatch.Patch {
 		path, val := parts[0], parts[1]
 
 		var nextOp jsonpatch.Operation
-		if path[len(path)-1:] == ":" {
-			trimmedPath := strings.TrimRight(path, ":")
-			nextOp = addRaw("/"+trimmedPath, []byte(val))
+		trPath, raw := translatePath(path)
+		seen[trPath] = 1
+		log.Println("trPat:", trPath)
+		if raw {
+			nextOp = addRaw(trPath, []byte(val))
 		} else {
-			nextOp = addString("/"+path, val)
+			nextOp = addString(trPath, val)
+		}
+		for _, op := range getHierarchy(nextOp) {
+			patch = append(patch, op)
 		}
 		patch = append(patch, nextOp)
 	}
