@@ -49,12 +49,18 @@ func getHierarchy(op jsonpatch.Operation) []jsonpatch.Operation {
 
 func translatePath(orig string) (string, bool) {
 	isRaw := orig[len(orig)-1:] == ":"
-	trans := orig
 	if isRaw {
-		trans = strings.TrimRight(orig, ":")
+		orig = strings.TrimRight(orig, ":")
 	}
-	trans = strings.ReplaceAll(trans, ".", "/")
-	return "/" + trans, isRaw
+	trans := ""
+	for _, part := range strings.Split(orig, "[") {
+		part = strings.TrimRight(part, "]")
+		log.Println("===next part:", part)
+		trans = trans + "/" + part
+		log.Println("===trans:", trans)
+	}
+
+	return trans, isRaw
 }
 
 func parseArgs() jsonpatch.Patch {
