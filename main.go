@@ -78,11 +78,6 @@ func translatePath(orig string) (string, bool) {
 	}
 	return trans, isRaw
 }
-func toString(op jsonpatch.Operation) string {
-	path, _ := op.Path()
-	val, _ := op.ValueInterface()
-	return fmt.Sprintf("op:%s path:%s val:%s", op.Kind(), path, val)
-}
 func parseArgs() jsonpatch.Patch {
 	patch := jsonpatch.Patch{}
 
