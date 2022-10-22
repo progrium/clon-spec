@@ -1,5 +1,8 @@
 build:
 	@go build
 
-test: build
-	@./clon name=John age:=28 lang:='["english","zulu"]' married:=true wife:='{"name":"Jane","age":30}'
+test: build deps
+	@basht tests/*
+	
+deps:
+	@type basht || go install github.com/progrium/basht@latest
