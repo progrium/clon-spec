@@ -6,7 +6,6 @@ T_arrayFlatSingle() {
     result="$($PROG \
     name=John \
     lang[]=english \
-    2>/dev/null \
   )"
 
   local expected='{"name":"John","lang":["english"]}'
@@ -19,7 +18,6 @@ T_arrayFlatMulti() {
     lang[]=english \
     lang[]=zulu \
     lang[]=german \
-    2>/dev/null \
   )"
 
   local expected='{"name":"John","lang":["english","zulu","german"]}'
@@ -30,7 +28,6 @@ T_arrayNestedSingle() {
     result="$($PROG \
     name=John \
     wife[lang][]=english \
-    2>/dev/null \
   )"
 
   local expected='{"name":"John","wife":{"lang":["english"]}}'
@@ -45,7 +42,6 @@ T_arrayNestedMulti() {
     wife[lang][]=french \
     wife[lang][]=spanish \
     wife[lang][]=greek \
-    2>/dev/null \
   )"
 
   local expected='{"name":"John","lang":["english","zulu"],"wife":{"lang":["french","spanish","greek"]}}'
@@ -59,7 +55,6 @@ T_arrayMixingRawAndNestedMulti() {
     search[platforms]:='["Terminal", "Desktop"]' \
     search[platforms][]=Web \
     search[platforms][]=Mobile \
-    2>/dev/null \
   )"
 
   local expected='{"category":"tools","search":{"type":"platforms","platforms":["Terminal","Desktop","Web","Mobile"]}}'
