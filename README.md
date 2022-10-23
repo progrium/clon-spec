@@ -70,7 +70,7 @@ $ clon \
 }
 ```
 
-When building a top-level array, values can be prefixed with `:` to indicate a non-string or raw JSON value. This is a shorthand for the top-level array syntax described later.
+When building a top level array, values can be prefixed with `:` to indicate a non-string or raw JSON value. This is a shorthand for the top level array syntax described later.
 
 ```shell
 $ clon John :29 :false :'{"tool": "HTTPie"}'
@@ -218,7 +218,7 @@ It is also possible to embed raw JSON to a nested structure, for example:
 $ clon \
   category=tools \
   search[type]=platforms \
-  'search[platforms]:=["Terminal", "Desktop"]' \
+  search[platforms]:='["Terminal", "Desktop"]' \
   search[platforms][]=Web \
   search[platforms][]=Mobile
 ```
@@ -269,7 +269,28 @@ $ clon \
 ]
 ```
 
-You can also apply the nesting to the items by referencing their index:
+As mentioned before, there is a shorthand to make this scenario much easier. The first argument must not be a key-value, but key-values can be used in later arguments producing a single key object. You can also use the raw value prefix `:` to include JSON arrays or objects.
+
+```shell
+$ clon :1 :2 :3 valid:=true :'[4, 5, 6]'
+```
+```json
+[
+    1,
+    2,
+    3,
+    {
+        "valid": true
+    },
+    [
+        4,
+        5,
+        6
+    ]
+]
+```
+
+For more complex top level elements, you can use the standard notation to apply nesting to the items by referencing their index:
 
 ```shell
 $ clon \
