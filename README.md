@@ -1,10 +1,19 @@
 # Command-Line Object Notation
-Ergonomic JSON input for CLI tools.
+Ergonomic JSON-compatible input syntax for CLI tools.
 
-CLON is an argument syntax spec for defining JSON objects in a way that makes sense for the command-line that isn't just taking raw JSON or pointing to a file. This was shamelessly stolen from [HTTPie](https://httpie.io/docs/cli/json).
+CLON is an argument syntax spec for defining JSON-like objects in a way that makes sense for the command-line that isn't just taking raw JSON or pointing to a file. This was shamelessly stolen from [HTTPie](https://httpie.io/docs/cli/json) with some modification.
+
+CLON is not meant to be a tool itself, but an argument syntax that you can use when building CLI tools that need to take arbitrary JSON-like data. An example tool would be a CLI client for an RPC system with a usage format like `rpctool call <method> <args...>`. CLON makes for a reasonably human-friendly way to input the argument data. Note that internally the tool may not use this syntax to build JSON, but a compatible format like CBOR, or even just to build an in-memory structure.
+
+### Implementations
+
+Below are some language specific libraries for easily accepting this syntax in your command-line tools:
+
+ * [progrium/clon-go](https://github.com/progrium/clon-go)
+ * your library here
 
 ## Simple Example
-In these examples, `clon` is an imaginary tool that takes CLON arguments and outputs the resulting JSON.
+In these examples, `clon` is an *imaginary tool* that takes CLON arguments and outputs the resulting structure as JSON.
 
 ```shell
 $ clon name=John email=john@example.org
@@ -14,6 +23,19 @@ $ clon name=John email=john@example.org
     "name": "John",
     "email": "john@example.org"
 }
+```
+
+If the first argument is in key-value form (with `=` or `:=` operator), the arguments will be used to construct an object. If the first argument is simply a value, the arguments will be used to construct an array. 
+
+```shell
+$ clon John john@example.org "Text string"
+```
+```json
+[
+  "John",
+  "john@example.org",
+  "Text string"
+]
 ```
 
 ## Non-string JSON fields
@@ -48,6 +70,22 @@ $ clon \
 }
 ```
 
+When building a top-level array, values can be prefixed with `:` to indicate a non-string or raw JSON value. This is a shorthand for the top-level array syntax described later.
+
+```shell
+$ clon John :29 :false :'{"tool": "HTTPie"}'
+```
+```json
+[
+  "John",
+  29,
+  false,
+  {
+    "tool": "HTTPie"
+  }
+]
+```
+
 ## Nested JSON
 You still use the existing data field operators (`=`/`:=`) but instead of specifying a top-level field name (like `key=value`), you specify a path declaration telling where and how to put the given value inside an object:
 
@@ -55,7 +93,6 @@ You still use the existing data field operators (`=`/`:=`) but instead of specif
 $ clon \
     platform[name]=HTTPie \
     platform[about][mission]='Make APIs simple and intuitive' \
-    platform[about][homepage]=httpie.io \
     platform[about][homepage]=httpie.io \
     platform[about][stars]:=54000 \
     platform[apps][]=Terminal \
@@ -364,8 +401,3 @@ $ echo -n '{"hello": "world"}' | clon
 $ clon < files/data.json
 ```
 
-## Implementations
-
-Below are some language specific libraries for easily accepting this syntax in your command-line tools:
-
- * your library here
